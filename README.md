@@ -1,4 +1,5 @@
 # ショッピングカート
+
 [🇯🇵 日本語](README.md) | [🇺🇸 English](README.en.md)
 
 このショッピングカートアプリは、TypeScript、React、Vite、Bootstrap、Context API、およびローカルストレージを使用して構築されています。ユーザーは商品をカートに追加したり、各商品の数量を調整したり、合計金額を確認したりできます。

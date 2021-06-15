@@ -1,0 +1,693 @@
+Context API is a feature in React that allows you to share data between components without passing props manually through every level of the component tree.
+
+It solves the problem called prop drilling.
+
+The Problem: Prop Drilling
+
+Imagine this component structure:
+
+App
+ │
+ └── Dashboard
+        │
+        └── UserPanel
+              │
+              └── Profile
+
+You have user information:
+
+const user = {
+  name: "Alice"
+}
+
+Without Context API:
+
+App
+ |
+ | pass user
+ ▼
+Dashboard
+ |
+ | pass user
+ ▼
+UserPanel
+ |
+ | pass user
+ ▼
+Profile
+
+Even if Dashboard and UserPanel don't need the user data, they must pass it down.
+
+This is called prop drilling.
+
+Context API Solution
+
+Context creates a global data container.
+
+              Context
+
+                |
+    ┌───────────┼───────────┐
+    ▼           ▼           ▼
+
+ Dashboard   UserPanel   Profile
+
+Components can directly access the data.
+
+Basic Context Flow
+Create Context
+
+↓
+
+Provide Data
+
+↓
+
+Consume Data
+
+↓
+
+Use Data
+Step 1: Create Context
+
+Example: User Context
+
+import { createContext } from "react";
+
+export const UserContext = createContext();
+Step 2: Provide Data
+
+Usually at the top:
+
+<UserContext.Provider value={user}>
+
+    <App />
+
+</UserContext.Provider>
+
+Now every child component can access user.
+
+Step 3: Consume Data
+
+Inside any component:
+
+import { useContext } from "react";
+import { UserContext } from "./UserContext";
+
+
+function Profile(){
+
+    const user = useContext(UserContext);
+
+    return (
+        <h1>
+            {user.name}
+        </h1>
+    );
+}
+
+Output:
+
+Alice
+
+No props required.
+
+Real Business Example: Authentication
+
+A common use:
+
+User Login
+
+↓
+
+Save User Information
+
+↓
+
+AuthContext
+
+↓
+
+All Components Access:
+
+- username
+- role
+- token
+- permissions
+
+Architecture:
+
+             AuthProvider
+
+                  |
+     ┌────────────┼────────────┐
+
+     ▼            ▼            ▼
+
+ Dashboard     Profile      Settings
+Example: Auth Context
+const AuthContext = createContext();
+
+
+function AuthProvider({children}) {
+
+    const [user, setUser] = useState(null);
+
+
+    return (
+        <AuthContext.Provider
+          value={{user, setUser}}
+        >
+          {children}
+        </AuthContext.Provider>
+    );
+}
+
+Now any component can do:
+
+const {user, setUser} = useContext(AuthContext);
+
+
+| Context API                  | Redux                    |
+| ---------------------------- | ------------------------ |
+| Built into React             | External library         |
+| Simple                       | More powerful            |
+| Small applications           | Large applications       |
+| Less code                    | More structure           |
+| Good for theme/auth/settings | Complex state management |
+
+
+Context API vs Props
+Props
+Parent
+
+↓
+
+Child
+
+↓
+
+Grandchild
+
+Data moves downward.
+
+Context
+Provider
+
+↓
+
+Any Child
+
+Data can be accessed directly.
+
+
+Redux is a state management library for JavaScript applications, especially React applications. It helps manage and share application data across many components in a predictable way.
+
+A simple explanation:
+
+Redux is a centralized storage system for frontend application state.
+
+
+The Problem Redux Solves
+
+In a React application:
+
+App
+ |
+ ├── Header
+ |
+ ├── Dashboard
+ |
+ └── UserProfile
+
+Imagine you need to share:
+
+Logged-in user
+Shopping cart
+Language
+Theme
+Notifications
+AI chat history
+
+Without Redux:
+
+Component A
+
+  ↓ props
+
+Component B
+
+  ↓ props
+
+Component C
+
+This becomes prop drilling.
+
+Redux Solution
+
+Redux creates one central store:
+
+              Redux Store
+
+                  |
+     ┌────────────┼────────────┐
+
+     ▼            ▼            ▼
+
+ Header      Dashboard    Profile
+
+Any component can access the required data.
+
+Redux Architecture
+
+Redux has three main concepts:
+
+State
+
+↓
+
+Action
+
+↓
+
+Reducer
+
+↓
+
+New State
+1. State
+
+State is your application data.
+
+Example:
+
+{
+  user: {
+    name: "Alice",
+    role: "admin"
+  },
+  cart: [
+    {
+      product: "Laptop"
+    }
+  ]
+}
+2. Action
+
+An action describes what happened.
+
+Example:
+
+{
+  type: "LOGIN_SUCCESS",
+  payload: {
+    name: "Alice"
+  }
+}
+
+Meaning:
+
+The user successfully logged in.
+
+3. Reducer
+
+A reducer decides how the state changes.
+
+Example:
+
+function userReducer(state, action) {
+
+  if(action.type === "LOGIN_SUCCESS") {
+
+    return {
+      ...state,
+      user: action.payload
+    };
+
+  }
+
+}
+
+
+Complete Redux Flow
+
+Example: User Login
+
+User clicks Login
+
+        ↓
+
+React Component
+
+        ↓
+
+Dispatch Action
+
+        ↓
+
+Redux Store
+
+        ↓
+
+Reducer Updates State
+
+        ↓
+
+Components Re-render
+Example Code
+Store
+import { configureStore } from "@reduxjs/toolkit";
+
+export const store = configureStore({
+  reducer: {
+    user: userReducer
+  }
+});
+Slice
+
+Modern Redux uses Redux Toolkit.
+
+import { createSlice } from "@reduxjs/toolkit";
+
+
+const userSlice = createSlice({
+
+name:"user",
+
+initialState:{
+    name:null
+},
+
+reducers:{
+
+
+login:(state, action)=>{
+    state.name = action.payload;
+}
+
+
+}
+
+});
+
+
+export const {login} = userSlice.actions;
+
+export default userSlice.reducer;
+Component
+import { useDispatch } from "react-redux";
+import { login } from "./userSlice";
+
+
+function Login(){
+
+const dispatch = useDispatch();
+
+
+return (
+
+<button
+ onClick={()=>{
+    dispatch(login("Alice"))
+ }}
+>
+Login
+</button>
+
+);
+
+}
+
+Example: AI Chat Application
+
+Redux can store:
+
+{
+  chat: {
+    messages:[
+      {
+        role:"user",
+        text:"Explain RAG"
+      },
+      {
+        role:"assistant",
+        text:"RAG means..."
+      }
+    ]
+  },
+
+  model:"gemini-2.5",
+
+  loading:false
+}
+
+Architecture:
+
+Next.js / React
+
+        |
+        ▼
+
+     Redux Store
+
+        |
+ ┌──────┼──────┐
+
+Chat UI Settings History
+
+        |
+        ▼
+
+    NestJS API
+
+        |
+        ▼
+
+ Gemini / OpenAI
+Redux Toolkit (Modern Redux)
+
+Old Redux was verbose:
+
+Many files
+Lots of boilerplate
+Manual reducers
+
+Modern Redux uses:
+
+Redux Toolkit
+
+createSlice()
+configureStore()
+createAsyncThunk()
+
+Most new projects use Redux Toolkit, not the old style.
+
+
+Redux vs Zustand
+
+Today, many React developers also use Zustand.
+
+Redux	Zustand
+Large ecosystem	Lightweight
+Enterprise apps	Small/medium apps
+Strict architecture	Simple API
+More concepts	Easier learning
+
+
+
+Vite (pronounced "veet") is a modern frontend build tool and development server used for building web applications with frameworks like React, Vue, Svelte, and Vanilla JavaScript.
+
+It was created by Evan You, the same person who created Vue.js.
+
+A simple way to think about it:
+
+Vite is the engine that runs, builds, and optimizes your frontend application.
+
+
+
+Developer
+    │
+    ▼
+React / Vue Code
+    │
+    ▼
+Vite
+    │
+    ├── Development Server
+    ├── Module Bundling
+    ├── Hot Reload
+    └── Production Build
+    │
+    ▼
+Browser
+
+
+Why Do We Need Vite?
+
+A browser cannot directly understand:
+
+TypeScript
+JSX
+Modern JavaScript modules
+React components
+Vue single-file components
+
+Example:
+
+React code:
+
+function App() {
+  return <h1>Hello</h1>
+}
+
+The browser cannot run JSX directly.
+
+Vite transforms it:
+
+React JSX
+
+↓
+
+JavaScript
+
+↓
+
+Browser
+Vite Development Flow
+
+When you run:
+
+npm run dev
+
+Vite starts a local server:
+
+http://localhost:5173
+
+Flow:
+
+You edit code
+
+↓
+
+Vite detects change
+
+↓
+
+Only changed module reloads
+
+↓
+
+Browser updates instantly
+
+This is called Hot Module Replacement (HMR).
+
+Vite Project Example
+
+Create React project:
+
+npm create vite@latest my-app
+
+Choose:
+
+Framework:
+React
+
+Language:
+TypeScript
+
+Project:
+
+my-app/
+
+├── src/
+│   ├── App.tsx
+│   ├── main.tsx
+│
+├── index.html
+├── package.json
+└── vite.config.ts
+
+
+Vite + React Example
+
+Component:
+
+function App(){
+
+ return (
+   <h1>
+     Hello Vite
+   </h1>
+ )
+
+}
+
+export default App;
+
+Vite serves it immediately.
+
+
+Vite vs Webpack
+
+Before Vite, many projects used Webpack.
+| Vite                   | Webpack                  |
+| ---------------------- | ------------------------ |
+| Very fast startup      | Slower startup           |
+| Modern                 | Older                    |
+| Uses native ES modules | Bundles everything early |
+| Simple configuration   | More complex             |
+| Popular with React/Vue | Enterprise legacy        |
+
+
+Vite Production Build
+
+Development:
+
+npm run dev
+
+For production:
+
+npm run build
+
+Vite creates:
+
+dist/
+
+├── index.html
+├── assets/
+│   ├── app.js
+│   └── app.css
+
+Then deploy:
+
+dist/
+
+↓
+
+Nginx
+
+↓
+
+Cloudflare Pages
+
+↓
+
+Vercel
+
+↓
+
+AWS S3
+
+
+Vite vs Next.js
+
+Since you asked about Next.js earlier:
+
+| Vite                     | Next.js                     |
+| ------------------------ | --------------------------- |
+| Build tool               | Full-stack framework        |
+| Mainly frontend          | Frontend + backend features |
+| React/Vue apps           | React applications          |
+| Client-side rendering    | SSR/Server Components       |
+| You add routing yourself | Built-in routing            |
+| Simple and fast          | More features               |
